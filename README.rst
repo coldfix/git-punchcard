@@ -2,7 +2,7 @@ git-punchcard
 =============
 
 Simple git punchcard utility, inspired by git-punchcard-plot_ but rewritten
-for for python3 with matplotlib.
+for python3 with matplotlib.
 
 .. _git-punchcard-plot: https://github.com/guanqun/git-punchcard-plot
 
