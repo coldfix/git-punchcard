@@ -3,14 +3,15 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-t TZ] [--grid] [-w WIDTH]
-    git-punchcard [-o FILE] [-t TZ] [--grid] [-w WIDTH] -- [<GIT-OPTIONS>...]
+    git-punchcard [-o FILE] [-t TZ] [--grid] [-w WIDTH] [--title TITLE]
+    git-punchcard [options] -- [<GIT-OPTIONS>...]
 
 Options:
     -o FILE, --output FILE          Set output file
     -t TZ, --timezone TZ            Set timezone
     -w WIDTH, --width WIDTH         Plot width in inches
     -g, --grid                      Enable grid
+    --title TITLE                   Set graph title
 """
 
 __title__   = 'git-punchcard'
@@ -36,6 +37,7 @@ def main(args=None):
     output   = options['--output']
     tz_name  = options['--timezone']
     grid     = options['--grid']
+    title    = options['--title']
     width    = int(options['--width'] or 10)
 
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -56,7 +58,7 @@ def main(args=None):
 
     punchcard(
         counts.T[:, ::-1], hours, days[::-1],
-        output=output, width=width, grid=grid)
+        output=output, width=width, grid=grid, title=title)
 
 
 def get_commit_times(git_opts):
@@ -68,7 +70,8 @@ def get_commit_times(git_opts):
     ]
 
 
-def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False):
+def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False,
+              title=None):
 
     fig, ax = plt.subplots()
     fig.tight_layout()
@@ -93,6 +96,7 @@ def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False):
             set_labels(labels, minor=False)
             set_labels(["" for _ in range(size)], minor=True)
 
+    ax.set_title(title)
     ax.set_aspect(1, adjustable='box')
     set_ticks('x', xlabels, counts.shape[0])
     set_ticks('y', ylabels, counts.shape[1])
