@@ -10,14 +10,29 @@ for python3 with matplotlib.
 Installation
 ~~~~~~~~~~~~
 
-The script can be obtained from PyPI:
+**The pragmatic way:** The script can be obtained from PyPI:
 
 .. code-block:: bash
 
     pip install --user git-punchcard
 
-Alternatively, simply drop the ``git-punchcard`` script into ``~/.local/bin``
-and add that folder to PATH.
+Also, make sure that ``~/.local/bin`` is in ``$PATH``. If it is not there, add
+the following lines to ``.bashrc`` or ``.zshrc``:
+
+.. code-block:: bash
+
+    PATH=$PATH:$HOME/.local/bin
+
+
+**The elegant way:** Get pipx_ and then run ``pipx install git-punchcard`` to
+install into an isolated environment.
+
+
+**The crude way:** Alternatively, simply drop the ``git-punchcard`` script
+into ``~/.local/bin`` and add that folder to PATH.
+
+
+.. _pipx: https://github.com/pipxproject/pipx
 
 
 Usage
