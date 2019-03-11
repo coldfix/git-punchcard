@@ -3,3 +3,7 @@ dist
 *.pyo
 *.egg-info
 build
+
+# images files etc
+*.png
+*.pdf
