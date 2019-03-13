@@ -10,7 +10,10 @@ def read_file(path):
 def exec_file(path):
     """Execute a python file and return the `globals` dictionary."""
     namespace = {}
-    exec(read_file(path), namespace, namespace)
+    try:
+        exec(read_file(path), namespace, namespace)
+    except ImportError:
+        pass
     return namespace
 
 
