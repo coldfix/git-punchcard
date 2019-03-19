@@ -25,7 +25,6 @@ __uri__     = 'https://github.com/coldfix/git-punchcard'
 import docopt
 import numpy as np
 import matplotlib.pyplot as plt
-from pytz import timezone
 
 import subprocess
 from datetime import datetime, timedelta
@@ -46,6 +45,7 @@ def main(args=None):
     dates = get_commit_times(git_opts)
 
     if tz_name:
+        from pytz import timezone
         try:
             tz = timezone(timedelta(hours=float(tz_name)))
         except ValueError:
