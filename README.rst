@@ -58,9 +58,18 @@ Set the directory of the git repository as follows:
 
     git punchcard -C /path/to/repo
 
-You can pass additional ``git log`` options to restrict the range of commits
-or author after ``--``, for example:
+You can pass additional ``git log`` options after a ``--``. This can for
+example be used to restrict the range of commits and/or limit to commits
+performed by a certain author:
 
 .. code-block:: bash
 
     git punchcard -- --author=myself master~20..master
+
+You can even to restrict to certain pathes within the git repository as
+follows (note the second ``--`` is passed to and needed for the ``git log``
+command line):
+
+.. code-block:: bash
+
+    git punchcard -- -- README.rst
