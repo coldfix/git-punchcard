@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 
 
 def main(args=None):
-    options  = docopt.docopt(__doc__, args)
+    options  = docopt.docopt(__doc__, args, version=__version__)
     git_opts = options['<GIT-OPTIONS>']
     folder   = options['--git-dir']
     output   = options['--output']
