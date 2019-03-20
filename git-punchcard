@@ -3,10 +3,11 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-t TZ] [--grid] [-w WIDTH] [--title TITLE]
+    git-punchcard [-o FILE] [-C DIR] [-t TZ] [--grid] [-w WIDTH] [--title TITLE]
     git-punchcard [options] -- [<GIT-OPTIONS>...]
 
 Options:
+    -C DIR, --git-dir DIR           Set path for git repository
     -o FILE, --output FILE          Set output file
     -t TZ, --timezone TZ            Set timezone
     -w WIDTH, --width WIDTH         Plot width in inches
@@ -33,6 +34,7 @@ from datetime import datetime, timedelta
 def main(args=None):
     options  = docopt.docopt(__doc__, args)
     git_opts = options['<GIT-OPTIONS>']
+    folder   = options['--git-dir']
     output   = options['--output']
     tz_name  = options['--timezone']
     grid     = options['--grid']
@@ -42,7 +44,7 @@ def main(args=None):
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     hours = ['{}'.format(x) for x in range(25)]
 
-    dates = get_commit_times(git_opts)
+    dates = get_commit_times(folder, git_opts)
 
     if tz_name:
         from pytz import timezone
@@ -61,8 +63,9 @@ def main(args=None):
         output=output, width=width, grid=grid, title=title)
 
 
-def get_commit_times(git_opts):
-    argv = ['git', 'log', '--pretty=format:%ai'] + git_opts
+def get_commit_times(folder, git_opts):
+    folder = folder or '.'
+    argv = ['git', '-C', folder, 'log', '--pretty=format:%ai'] + git_opts
     stdout = subprocess.check_output(argv).decode('utf-8')
     return [
         datetime.strptime(line, '%Y-%m-%d %H:%M:%S %z')

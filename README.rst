@@ -52,15 +52,15 @@ argument, e.g.:
 
     git punchcard --timezone CET
 
+Set the directory of the git repository as follows:
+
+.. code-block:: bash
+
+    git punchcard -C /path/to/repo
+
 You can pass additional ``git log`` options to restrict the range of commits
 or author after ``--``, for example:
 
 .. code-block:: bash
 
     git punchcard -- --author=myself master~20..master
-
-Set the directory of the git repository as follows:
-
-.. code-block:: bash
-
-    git -C /path/to/repo punchcard
