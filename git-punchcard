@@ -15,9 +15,7 @@ Options:
     --title TITLE                   Set graph title
 """
 
-__title__   = 'git-punchcard'
 __version__ = '1.1.0'
-__summary__ = 'punchcard generator for git commit frequencies'
 __author__  = 'Thomas Gläßle'
 __email__   = 'thomas@coldfix.de'
 __license__ = 'Unlicense'
