@@ -1,9 +1,16 @@
 Changes
 =======
 
+1.3.0
+~~~~~
+Date: 21.03.2019
+
+- log options are now passed directly without ``--`` same as the other options
+- drop dependency on docopt
+
 1.2.0
 ~~~~~
-Date: 21.03.1988
+Date: 21.03.2019
 
 - fix setup.py exception if called without runtime dependencies
 - import pytz only if needed
@@ -15,6 +22,6 @@ Date: 21.03.1988
 
 1.1.0
 ~~~~~
-Date: 11.03.1988
+Date: 11.03.2019
 
 - add ``--title`` parameter

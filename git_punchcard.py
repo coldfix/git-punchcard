@@ -23,7 +23,7 @@ restrict the range of commits taken into account. For more info, see `git
 help log`.
 """
 
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __author__  = 'Thomas Gläßle'
 __email__   = 'thomas@coldfix.de'
 __license__ = 'Unlicense'
