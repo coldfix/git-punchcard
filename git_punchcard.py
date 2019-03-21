@@ -5,7 +5,7 @@ Generate a github-like punchcard for git commit activity.
 Usage:
     git-punchcard [-o FILE] [-C DIR] [-t TZ]
                   [--grid] [-w WIDTH] [--title TITLE]
-                  [-- <GIT-OPTIONS>...]
+                  [<log options>] [<revision range>] [-- <pathes>]
 
 Options:
     -C DIR, --git-dir DIR           Set path for git repository
@@ -29,23 +29,36 @@ __email__   = 'thomas@coldfix.de'
 __license__ = 'Unlicense'
 __uri__     = 'https://github.com/coldfix/git-punchcard'
 
-import docopt
 import numpy as np
 import matplotlib.pyplot as plt
 
 import subprocess
 from datetime import datetime, timedelta
+from argparse import ArgumentParser
+
+
+def argument_parser():
+    parser = ArgumentParser()
+    add_argument = parser.add_argument
+    add_argument('-C', '--git-dir',  type=str, help='Path to git repository')
+    add_argument('-o', '--output',   type=str, help='Output image file name')
+    add_argument('-t', '--timezone', type=str, help='Set timezone')
+    add_argument('-w', '--width',    type=int, help='Plot width in inches')
+    add_argument('--title', help="Set graph title")
+    add_argument('-g', '--grid', action='store_true', help="Enable grid")
+    add_argument('--version', action='version', version=__version__)
+    return parser
 
 
 def main(args=None):
-    options  = docopt.docopt(__doc__, args, version=__version__)
-    git_opts = options['<GIT-OPTIONS>']
-    folder   = options['--git-dir']
-    output   = options['--output']
-    tz_name  = options['--timezone']
-    grid     = options['--grid']
-    title    = options['--title']
-    width    = int(options['--width'] or 10)
+    parser = argument_parser()
+    options, git_opts = parser.parse_known_args(args)
+    folder   = options.git_dir
+    output   = options.output
+    tz_name  = options.timezone
+    grid     = options.grid
+    title    = options.title
+    width    = options.width or 10
 
     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     hours = ['{}'.format(x) for x in range(25)]
