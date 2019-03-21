@@ -3,8 +3,9 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-C DIR] [-t TZ] [--grid] [-w WIDTH] [--title TITLE]
-    git-punchcard [options] -- [<GIT-OPTIONS>...]
+    git-punchcard [-o FILE] [-C DIR] [-t TZ]
+                  [--grid] [-w WIDTH] [--title TITLE]
+                  [-- <GIT-OPTIONS>...]
 
 Options:
     -C DIR, --git-dir DIR           Set path for git repository
@@ -13,6 +14,10 @@ Options:
     -w WIDTH, --width WIDTH         Plot width in inches
     -g, --grid                      Enable grid
     --title TITLE                   Set graph title
+
+All further options are passed directly to `git log` and can be used to
+restrict the range of commits taken into account. For more info, see `git
+help log`.
 """
 
 __version__ = '1.1.0'
