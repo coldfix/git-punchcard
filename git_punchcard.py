@@ -33,14 +33,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import subprocess
-from functools import partial
 from datetime import datetime, timedelta
-from argparse import ArgumentParser, HelpFormatter
+from argparse import ArgumentParser
 
 
 def argument_parser():
-    formatter = partial(HelpFormatter, max_help_position=52)
-    parser = ArgumentParser(formatter_class=formatter)
+    parser = ArgumentParser()
+    parser.format_help = lambda: __doc__
     add_argument = parser.add_argument
     add_argument('-C', '--git-dir',  type=str, help='Path to git repository')
     add_argument('-o', '--output',   type=str, help='Output image file name')
