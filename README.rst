@@ -50,7 +50,7 @@ To get a list of available options, type:
 
 .. code-block:: bash
 
-    git punchcard --help        # for our own options
+    git punchcard -h            # for our own options
 
     git help log                # for possible git log options
 
