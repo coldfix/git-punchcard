@@ -17,7 +17,7 @@ def exec_file(path):
     return namespace
 
 
-metadata = exec_file('git-punchcard')
+metadata = exec_file('git_punchcard.py')
 
 setup(
     version=metadata['__version__'],

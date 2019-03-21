@@ -30,8 +30,8 @@ the following lines to ``.bashrc`` or ``.zshrc``:
 install into an isolated environment.
 
 
-**The crude way:** Alternatively, simply drop the ``git-punchcard`` script
-into ``~/.local/bin`` and add that folder to PATH.
+**The crude way:** Alternatively, simply drop the ``git_punchcard.py`` script
+into ``~/.local/bin``, rename to ``git-punchcard`` and add the folder to PATH.
 
 
 .. _pipx: https://github.com/pipxproject/pipx
