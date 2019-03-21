@@ -7,3 +7,4 @@ build
 # images files etc
 *.png
 *.pdf
+!screenshot.png

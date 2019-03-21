@@ -6,6 +6,8 @@ for python3 with matplotlib.
 
 .. _git-punchcard-plot: https://github.com/guanqun/git-punchcard-plot
 
+|Screenshot|
+
 
 Installation
 ~~~~~~~~~~~~
@@ -119,3 +121,10 @@ Track evolution of commit activity over the years:
         git punchcard -o $year.png --title $year \
             -- --since 1.1.$year --until 31.12.$year
     done
+
+
+.. resources:
+
+.. |Screenshot| image:: https://raw.githubusercontent.com/coldfix/git-punchcard/master/screenshot.png
+   :target:             https://raw.githubusercontent.com/coldfix/git-punchcard/master/screenshot.png
+   :alt:                Screenshot
