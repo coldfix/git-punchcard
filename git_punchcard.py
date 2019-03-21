@@ -15,6 +15,9 @@ Options:
     -g, --grid                      Enable grid
     --title TITLE                   Set graph title
 
+    -h                              Show this help
+    --version                       Show version and exit
+
 All further options are passed directly to `git log` and can be used to
 restrict the range of commits taken into account. For more info, see `git
 help log`.
