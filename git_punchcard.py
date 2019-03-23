@@ -3,7 +3,7 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-C DIR] [-t TZ]
+    git-punchcard [-o FILE] [-C DIR] [-t TZ] [-p PERIOD]
                   [--grid] [-w WIDTH] [--title TITLE]
                   [<log options>] [<revision range>] [-- <pathes>]
 
@@ -11,6 +11,7 @@ Options:
     -C DIR, --git-dir DIR           Set path for git repository
     -o FILE, --output FILE          Set output file
     -t TZ, --timezone TZ            Set timezone
+    -p PERIOD, --period PERIOD      Graphed time period, e.g.: "wday/hour"
     -w WIDTH, --width WIDTH         Plot width in inches
     -g, --grid                      Enable grid
     --title TITLE                   Set graph title
@@ -44,6 +45,7 @@ def argument_parser():
     add_argument('-C', '--git-dir',  type=str, help='Path to git repository')
     add_argument('-o', '--output',   type=str, help='Output image file name')
     add_argument('-t', '--timezone', type=str, help='Set timezone')
+    add_argument('-p', '--period',   type=str, help='Set graphed period')
     add_argument('-w', '--width',    type=int, help='Plot width in inches')
     add_argument('--title', help="Set graph title")
     add_argument('-g', '--grid', action='store_true', help="Enable grid")
@@ -57,12 +59,10 @@ def main(args=None):
     folder   = options.git_dir
     output   = options.output
     tz_name  = options.timezone
+    period   = options.period
     grid     = options.grid
     title    = options.title
     width    = options.width or 10
-
-    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    hours = ['{}'.format(x) for x in range(25)]
 
     dates = get_commit_times(folder, git_opts)
 
@@ -74,13 +74,30 @@ def main(args=None):
             tz = timezone(tz_name)
         dates = [date.astimezone(tz) for date in dates]
 
-    counts = np.zeros((7, 24))
-    for date in dates:
-        counts[date.weekday()][date.hour] += 1
+    period = period or 'wday/hour'
+    if '/' in period:
+        yname, xname = period.split('/')
+        check_period(xname, Classifiers.KNOWN)
+        check_period(yname, Classifiers.KNOWN)
+    else:
+        check_period(period, Classifiers.SHORT)
+        xname, yname = Classifiers.SHORT[period]
+
+    xdata, xlabel, xmin, xmax = getattr(Classifiers, xname)(dates)
+    ydata, ylabel, ymin, ymax = getattr(Classifiers, yname)(dates)
+
+    counts = np.zeros((xmax-xmin+1, ymax-ymin+1))
+    for x, y in zip(xdata, ydata):
+        counts[x - xmin][y - ymin] += 1
 
     punchcard(
-        counts.T[:, ::-1], hours, days[::-1],
+        counts[:, ::-1], xlabel, ylabel[::-1],
         output=output, width=width, grid=grid, title=title)
+
+def check_period(period, allowed):
+    if period not in allowed:
+        raise ValueError("Unknown period: {!r}, must be one of: [{}]"
+                         .format(period, ', '.join(allowed)))
 
 
 def get_commit_times(folder, git_opts):
@@ -91,6 +108,39 @@ def get_commit_times(folder, git_opts):
         datetime.strptime(line, '%Y-%m-%d %H:%M:%S %z')
         for line in stdout.splitlines()
     ]
+
+
+class Classifiers:
+
+    KNOWN = ['year', 'month', 'wday', 'hour']
+    SHORT = {
+        'year': ('month', 'year'),
+        'month': ('month', 'wday'),
+        'wday': ('hour', 'wday'),
+    }
+
+    def year(dates):
+        values = [d.year for d in dates]
+        first = min(values)
+        last = max(values)
+        labels = [str(year) for year in range(first, last+1)]
+        return (values, labels, first, last)
+
+    def month(dates):
+        values = [d.month for d in dates]
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return (values, labels, 1, 12)
+
+    def wday(dates):
+        values = [d.weekday() for d in dates]
+        labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        return (values, labels, 0, 6)
+
+    def hour(dates):
+        values = [d.hour for d in dates]
+        labels = ['{}'.format(x) for x in range(25)]
+        return (values, labels, 0, 23)
 
 
 def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False,

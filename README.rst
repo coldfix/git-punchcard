@@ -72,6 +72,13 @@ argument, e.g.:
 
     git punchcard --timezone CET
 
+Specify different y/x axes:
+
+.. code-block:: bash
+
+    git punchcard -p year/month
+    git punchcard -p wday/month
+
 Set the directory of the git repository as follows:
 
 .. code-block:: bash
