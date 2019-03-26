@@ -44,7 +44,8 @@ Additional arguments can be specified as follows:
 
 .. code-block:: bash
 
-    git punchcard [options] [log options] [revision range] [-- pathes]
+    git punchcard [<input path>...] [<options>]
+                  [--] [<log options>] [<revision range>] [-- <path>...]
 
 For more help on available options, type:
 
@@ -74,8 +75,14 @@ The most common builtin options are:
     # histogram with specified x axis:
     git punchcard -p /wday
 
-    # set the directory of the git repository:
-    git punchcard -C /path/to/repo
+    # set the directory of the git repository (multiple allowed):
+    git punchcard /path/to/repo
+
+    # analyze all repositories in ~/dev:
+    git punchcard ~/dev/*/.git
+
+    # read commit dates from stdin:
+    git punchcard -
 
     # show a github-like punchcard plot with grid:
     git punchcard --grid
