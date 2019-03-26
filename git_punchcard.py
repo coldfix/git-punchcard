@@ -17,7 +17,7 @@ Options:
     --title TITLE                   Set graph title
 
     -h                              Show this help
-    --version                       Show version and exit
+    -v, --version                   Show version and exit
 
 All further options are passed directly to `git log` and can be used to
 restrict the range of commits taken into account. For more info, see `git
@@ -40,16 +40,16 @@ from argparse import ArgumentParser
 
 def argument_parser():
     parser = ArgumentParser()
-    parser.format_help = lambda: __doc__
+    parser.format_help = lambda: __doc__.lstrip()
     add_argument = parser.add_argument
-    add_argument('-C', '--git-dir',  type=str, help='Path to git repository')
-    add_argument('-o', '--output',   type=str, help='Output image file name')
-    add_argument('-t', '--timezone', type=str, help='Set timezone')
-    add_argument('-p', '--period',   type=str, help='Set graphed period')
-    add_argument('-w', '--width',    type=int, help='Plot width in inches')
-    add_argument('--title', help="Set graph title")
-    add_argument('-g', '--grid', action='store_true', help="Enable grid")
-    add_argument('--version', action='version', version=__version__)
+    add_argument('-C', '--git-dir',  type=str)
+    add_argument('-o', '--output',   type=str)
+    add_argument('-t', '--timezone', type=str)
+    add_argument('-p', '--period',   type=str)
+    add_argument('-w', '--width',    type=int)
+    add_argument('--title',          type=str)
+    add_argument('-g', '--grid',     action='store_true')
+    add_argument('-v', '--version',  action='version', version=__version__)
     return parser
 
 
@@ -67,14 +67,31 @@ def main(args=None):
     dates = get_commit_times(folder, git_opts)
 
     if tz_name:
-        from pytz import timezone
-        try:
-            tz = timezone(timedelta(hours=float(tz_name)))
-        except ValueError:
-            tz = timezone(tz_name)
-        dates = [date.astimezone(tz) for date in dates]
+        dates = dates_to_timezone(dates, tz_name)
 
     period = period or 'wday/hour'
+    fig = plot_date_counts(
+        dates, period, width=width, grid=grid, title=title)
+
+    savefig(fig, output)
+
+
+def dates_to_timezone(dates, tz_name):
+    """Transform a list of datetime objects to specified timezone."""
+    from pytz import timezone
+    try:
+        tz = timezone(timedelta(hours=float(tz_name)))
+    except ValueError:
+        tz = timezone(tz_name)
+    return [date.astimezone(tz) for date in dates]
+
+
+def plot_date_counts(dates, period='wday/hour', *,
+                     width=10, grid=False, title=None):
+    """
+    Create and return a histogram/punchcard figure with ``dates`` counted as
+    specified by ``period``.
+    """
     if '/' in period:
         yname, xname = period.split('/')
         check_period(xname or yname, Classifiers.KNOWN)
@@ -95,8 +112,7 @@ def main(args=None):
         punchcard(ax, counts[:, ::-1], xlabel, ylabel[::-1])
     else:
         histogram(ax, counts[:, ::-1], xlabel, ylabel[::-1])
-
-    savefig(fig, output)
+    return fig
 
 
 def check_period(period, allowed):

@@ -12,90 +12,81 @@ for python3 with matplotlib.
 Installation
 ~~~~~~~~~~~~
 
-**The pragmatic way:** The script can be obtained from PyPI:
+Install or upgrade from PyPI_ as follows:
 
 .. code-block:: bash
 
-    pip install --user git-punchcard
+    pip install --user --upgrade git-punchcard
 
-Also, make sure that ``~/.local/bin`` is in ``$PATH``. If it is not there, add
-the following lines to ``.bashrc`` or ``.zshrc``:
+Also, make sure that ``$HOME/.local/bin`` is in ``$PATH``.
+
+To avoid conflicts with other packages, I recommend installing into an
+isolated environment, e.g. using pipx_:
 
 .. code-block:: bash
 
-    PATH=$PATH:$HOME/.local/bin
+    pipx install git-punchcard
 
-
-**The elegant way:** Get pipx_ and then run ``pipx install git-punchcard`` to
-install into an isolated environment.
-
-
-**The crude way:** Alternatively, simply drop the ``git_punchcard.py`` script
-into ``~/.local/bin``, rename to ``git-punchcard`` and add the folder to PATH.
-
-
+.. _PyPI: https://pypi.org/project/git-punchcard
 .. _pipx: https://github.com/pipxproject/pipx
 
 
 Usage
 ~~~~~
 
-The syntax of the command is as follows:
+Basic usage:
+
+.. code-block:: bash
+
+    git punchcard
+
+Additional arguments can be specified as follows:
 
 .. code-block:: bash
 
     git punchcard [options] [log options] [revision range] [-- pathes]
 
-To get a list of available options, type:
+For more help on available options, type:
 
 .. code-block:: bash
 
-    git punchcard -h            # for our own options
+    git punchcard -h            # [options]
+    git help log                # [log options]
+    git help gitrevisions       # [revision]
 
-    git help log                # for possible git log options
 
-    git help gitrevisions       # for revision range
+Options
+~~~~~~~
 
-The most important options are:
-
-Show a github-like punchcard plot with grid:
-
-.. code-block:: bash
-
-    git punchcard --grid
-
-By default, the author's local timezone is used for the plot. In order to use
-a fixed timezone for all commits, you have to specify a ``--timezone``
-argument, e.g.:
+The most common builtin options are:
 
 .. code-block:: bash
 
+    # use a fixed timezone for all commits (case-sensitive):
     git punchcard --timezone CET
 
-Specify different y/x axes:
-
-.. code-block:: bash
-
-    # punchcard: y/x
+    # show punchcard with specified y/x axes:
     git punchcard -p year/month
     git punchcard -p wday/month
 
-    # histogram for weekday:
+    # histogram with specified x axis:
     git punchcard -p /wday
 
-Set the directory of the git repository as follows:
-
-.. code-block:: bash
-
+    # set the directory of the git repository:
     git punchcard -C /path/to/repo
 
+    # show a github-like punchcard plot with grid:
+    git punchcard --grid
 
-Advanced examples
-~~~~~~~~~~~~~~~~~
+By default, each commit's local timezone is used for the plot.
 
-You can pass additional options understood by ``git log``. This can for
-example be used to restrict the range of commits and/or limit to commits
-performed by a certain author:
+
+git log options
+~~~~~~~~~~~~~~~
+
+Additionally, you can pass any options understood by ``git log`` to e.g.
+restrict the range of commits and limit to commits performed by a certain
+author:
 
 .. code-block:: bash
 
@@ -109,18 +100,14 @@ performed by a certain author:
     git punchcard --since="1 year ago" --until=now
 
     # show at which times a certain file/folder is usually edited:
-    git punchcard --follow -- src
-    git punchcard --follow -- docs
+    git punchcard --follow -- README.rst docs
 
     # show at which times, people like to merge:
     git punchcard --merges
 
-You can even to restrict to certain pathes within the git repository as
-follows:
 
-.. code-block:: bash
-
-    git punchcard -- README.rst
+Advanced example
+~~~~~~~~~~~~~~~~
 
 Track evolution of commit activity over the years:
 
