@@ -15,12 +15,15 @@ script:
   - twine check dist/*
   - pyflakes .
 
-deploy:
-  - provider: pypi
-    skip_cleanup: true
-    on:
-      tags: true
-      condition: $TRAVIS_PYTHON_VERSION = 3.7
-    user: coldfix-deploy
-    password:
-      secure: "WEp+kV7bgWWVTVkGxsdurT8hFIxexO5KVlcRS5usc59iy5kXVkUbRpMjHIahzyt3JSlsSe/7rZXeGaGAynRKPrCOn3jRUYgBBIhYjoycqVpl4qNa4nBPpB0685qLQO3kzGD5w2WmHz4rxCdxlRacgrbgHM+hdFtZg492TLa39kNMGy5dY7sHmaXiaejtCd63nO2QTP9gckbXt/lxKhrY+ABz0V4gXuq/3A9vBJRA1C4ItPcKaf3oPln88H2fQloq13MqHqv6+eOK3v5zpWTSIiE0hOPfpXNsIRT15aSSwTf+Say8hgshF8KdG0s63C5MfWc5wpcpggcL6VFwc6wWrpDu79fTAsAv1Vb+BEQdbWxFnB7groPChvbdPzjH5FX/toqsI6fRYZLBaPpQQjaPplWMTi5ILLb+hRq5EEVM1lDRPa4cu9Rw5S1DDCDWPTp07BRjBbsBbMJgOP2ZlW67kMWAuXSeGVPSHKQQBDW4a/7cEFYkntWUqKJx/PlvauNOScw/IMy3Z60ApNLvATBg6ou4I3Tlgf+sIaS1J7iIiDGadGIzmzkqtlF1ZBsQv9r28v6hgcMNQYyzEwSJ+cfmZvx93QGLGBCsmB1JuCKWn3vH2W4ikGdyh3B0kr+vebnSDYLa3AYJPMfGat1f/8VNm2qETPwQQMCDKkdr/8lfPbs="
+jobs:
+  include:
+    - stage: deploy
+      name: Upload release to PyPI
+      if: tag is present
+      script: skip
+      deploy:
+      - provider: pypi
+        skip_cleanup: true
+        user: coldfix-deploy
+        password:
+          secure: "WEp+kV7bgWWVTVkGxsdurT8hFIxexO5KVlcRS5usc59iy5kXVkUbRpMjHIahzyt3JSlsSe/7rZXeGaGAynRKPrCOn3jRUYgBBIhYjoycqVpl4qNa4nBPpB0685qLQO3kzGD5w2WmHz4rxCdxlRacgrbgHM+hdFtZg492TLa39kNMGy5dY7sHmaXiaejtCd63nO2QTP9gckbXt/lxKhrY+ABz0V4gXuq/3A9vBJRA1C4ItPcKaf3oPln88H2fQloq13MqHqv6+eOK3v5zpWTSIiE0hOPfpXNsIRT15aSSwTf+Say8hgshF8KdG0s63C5MfWc5wpcpggcL6VFwc6wWrpDu79fTAsAv1Vb+BEQdbWxFnB7groPChvbdPzjH5FX/toqsI6fRYZLBaPpQQjaPplWMTi5ILLb+hRq5EEVM1lDRPa4cu9Rw5S1DDCDWPTp07BRjBbsBbMJgOP2ZlW67kMWAuXSeGVPSHKQQBDW4a/7cEFYkntWUqKJx/PlvauNOScw/IMy3Z60ApNLvATBg6ou4I3Tlgf+sIaS1J7iIiDGadGIzmzkqtlF1ZBsQv9r28v6hgcMNQYyzEwSJ+cfmZvx93QGLGBCsmB1JuCKWn3vH2W4ikGdyh3B0kr+vebnSDYLa3AYJPMfGat1f/8VNm2qETPwQQMCDKkdr/8lfPbs="
