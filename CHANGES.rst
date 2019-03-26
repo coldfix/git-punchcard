@@ -1,6 +1,13 @@
 Changes
 =======
 
+2.0.1
+~~~~~
+Date: 26.03.2019
+
+- fix: default to current directory if no input pathes were passed by the user
+
+
 2.0.0
 ~~~~~
 Date: 26.03.2019
