@@ -65,9 +65,13 @@ def main(args=None):
     title    = options.title
     width    = options.width or 10
 
-    dates = get_commit_times(folder, git_opts)
+    try:
+        dates = get_commit_times(folder, git_opts)
+    except subprocess.CalledProcessError:
+        raise SystemExit(1)
     if not dates:
         raise SystemExit("No commits match the specified restrictions.")
+    print("Processing {} commits.".format(len(dates)))
 
     if tz_name:
         dates = dates_to_timezone(dates, tz_name)
@@ -140,10 +144,8 @@ def get_commit_times(folder, git_opts):
     folder = folder or '.'
     argv = ['git', '-C', folder, 'log', '--pretty=format:%ai'] + git_opts
     cmdl = ' '.join(map(shlex.quote, argv))
-    try:
-        stdout = subprocess.check_output(argv).decode('utf-8')
-    except subprocess.CalledProcessError:
-        raise SystemExit("Error during: {!r}".format(cmdl))
+    print("Running: {!r}".format(cmdl))
+    stdout = subprocess.check_output(argv).decode('utf-8')
     return [
         datetime.strptime(line, '%Y-%m-%d %H:%M:%S %z')
         for line in stdout.splitlines()
