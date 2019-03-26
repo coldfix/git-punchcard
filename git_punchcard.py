@@ -3,7 +3,7 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-C DIR] [-t TZ] [-p PERIOD]
+    git-punchcard [-o FILE] [-C DIR]... [-t TZ] [-p PERIOD]
                   [--grid] [-w WIDTH] [--title TITLE]
                   [<log options>] [<revision range>] [-- <pathes>]
 
@@ -45,7 +45,7 @@ def argument_parser():
     parser = ArgumentParser()
     parser.format_help = lambda: __doc__.lstrip()
     add_argument = parser.add_argument
-    add_argument('-C', '--git-dir',  type=str)
+    add_argument('-C', '--git-dir',  action='append')
     add_argument('-o', '--output',   type=str)
     add_argument('-t', '--timezone', type=str)
     add_argument('-p', '--period',   type=str)
@@ -59,7 +59,7 @@ def argument_parser():
 def main(args=None):
     parser = argument_parser()
     options, git_opts = parser.parse_known_args(args)
-    folder   = options.git_dir
+    git_dirs = options.git_dir
     output   = options.output
     tz_name  = options.timezone
     period   = options.period
@@ -67,10 +67,12 @@ def main(args=None):
     title    = options.title
     width    = options.width or 10
 
-    try:
-        dates = get_commit_times(folder, git_opts)
-    except subprocess.CalledProcessError:
-        raise SystemExit(1)
+    dates = []
+    for folder in git_dirs:
+        try:
+            dates.extend(get_commit_times(folder, git_opts))
+        except subprocess.CalledProcessError:
+            raise SystemExit(1)
     if not dates:
         raise SystemExit("No commits match the specified restrictions.")
     print("Processing {} commits.".format(len(dates)))
