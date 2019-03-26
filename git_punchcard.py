@@ -3,7 +3,7 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-C DIR] [-t TZ]
+    git-punchcard [-o FILE] [-C DIR] [-t TZ] [-p PERIOD]
                   [--grid] [-w WIDTH] [--title TITLE]
                   [<log options>] [<revision range>] [-- <pathes>]
 
@@ -11,6 +11,7 @@ Options:
     -C DIR, --git-dir DIR           Set path for git repository
     -o FILE, --output FILE          Set output file
     -t TZ, --timezone TZ            Set timezone
+    -p PERIOD, --period PERIOD      Graphed time period, e.g.: "wday/hour"
     -w WIDTH, --width WIDTH         Plot width in inches
     -g, --grid                      Enable grid
     --title TITLE                   Set graph title
@@ -44,6 +45,7 @@ def argument_parser():
     add_argument('-C', '--git-dir',  type=str, help='Path to git repository')
     add_argument('-o', '--output',   type=str, help='Output image file name')
     add_argument('-t', '--timezone', type=str, help='Set timezone')
+    add_argument('-p', '--period',   type=str, help='Set graphed period')
     add_argument('-w', '--width',    type=int, help='Plot width in inches')
     add_argument('--title', help="Set graph title")
     add_argument('-g', '--grid', action='store_true', help="Enable grid")
@@ -57,12 +59,10 @@ def main(args=None):
     folder   = options.git_dir
     output   = options.output
     tz_name  = options.timezone
+    period   = options.period
     grid     = options.grid
     title    = options.title
     width    = options.width or 10
-
-    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    hours = ['{}'.format(x) for x in range(25)]
 
     dates = get_commit_times(folder, git_opts)
 
@@ -74,13 +74,35 @@ def main(args=None):
             tz = timezone(tz_name)
         dates = [date.astimezone(tz) for date in dates]
 
-    counts = np.zeros((7, 24))
-    for date in dates:
-        counts[date.weekday()][date.hour] += 1
+    period = period or 'wday/hour'
+    if '/' in period:
+        yname, xname = period.split('/')
+        check_period(xname or yname, Classifiers.KNOWN)
+        check_period(yname or xname, Classifiers.KNOWN)
+    else:
+        check_period(period, Classifiers.SHORT)
+        xname, yname = Classifiers.SHORT[period]
 
-    punchcard(
-        counts.T[:, ::-1], hours, days[::-1],
-        output=output, width=width, grid=grid, title=title)
+    xdata, xlabel, xmin, xmax = getattr(Classifiers, xname or 'none')(dates)
+    ydata, ylabel, ymin, ymax = getattr(Classifiers, yname or 'none')(dates)
+
+    counts = np.zeros((xmax-xmin+1, ymax-ymin+1))
+    for x, y in zip(xdata, ydata):
+        counts[x - xmin][y - ymin] += 1
+
+    fig, ax = makefig(width=width, grid=grid, title=title)
+    if xname and yname:
+        punchcard(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+    else:
+        histogram(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+
+    savefig(fig, output)
+
+
+def check_period(period, allowed):
+    if period not in allowed:
+        raise ValueError("Unknown period: {!r}, must be one of: [{}]"
+                         .format(period, ', '.join(allowed)))
 
 
 def get_commit_times(folder, git_opts):
@@ -93,38 +115,92 @@ def get_commit_times(folder, git_opts):
     ]
 
 
-def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False,
-              title=None):
+class Classifiers:
 
+    KNOWN = ['year', 'month', 'wday', 'hour']
+    SHORT = {
+        'year': ('month', 'year'),
+        'month': ('month', 'wday'),
+        'wday': ('hour', 'wday'),
+    }
+
+    def year(dates):
+        values = [d.year for d in dates]
+        first = min(values)
+        last = max(values)
+        labels = [str(year) for year in range(first, last+1)]
+        return (values, labels, first, last)
+
+    def month(dates):
+        values = [d.month for d in dates]
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return (values, labels, 1, 12)
+
+    def wday(dates):
+        values = [d.weekday() for d in dates]
+        labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        return (values, labels, 0, 6)
+
+    def hour(dates):
+        values = [d.hour for d in dates]
+        labels = ['{}'.format(x) for x in range(25)]
+        return (values, labels, 0, 23)
+
+    def none(dates):
+        values = [0 for d in dates]
+        labels = []
+        return (values, labels, 0, 0)
+
+
+def set_ticks(ax, axis, labels, size, **kwargs):
+    set_lim    = getattr(ax, 'set_{}lim'.format(axis))
+    set_ticks  = getattr(ax, 'set_{}ticks'.format(axis))
+    set_labels = getattr(ax, 'set_{}ticklabels'.format(axis))
+
+    set_lim(0, size)
+    set_ticks(np.arange(size + 1), minor=False)
+    set_ticks(np.arange(size) + 0.5, minor=True)
+    ax.tick_params(axis=axis, which='minor', length=0)
+
+    if len(labels) == size:
+        # labels centered in bin
+        set_labels(["" for _ in range(size+1)], minor=False)
+        set_labels(labels, minor=True, **kwargs)
+    else:
+        # labels at bin edges:
+        set_labels(labels, minor=False, **kwargs)
+        set_labels(["" for _ in range(size)], minor=True)
+
+
+def makefig(width=10, grid=False, title=None):
     fig, ax = plt.subplots()
     fig.tight_layout()
     fig.set_figwidth(width)
-
-    def set_ticks(axis, labels, size):
-        set_lim    = getattr(ax, 'set_{}lim'.format(axis))
-        set_ticks  = getattr(ax, 'set_{}ticks'.format(axis))
-        set_labels = getattr(ax, 'set_{}ticklabels'.format(axis))
-
-        set_lim(0, size)
-        set_ticks(np.arange(size + 1), minor=False)
-        set_ticks(np.arange(size) + 0.5, minor=True)
-        ax.tick_params(axis=axis, which='minor', length=0)
-
-        if len(labels) == size:
-            # labels centered in bin
-            set_labels(["" for _ in range(size+1)], minor=False)
-            set_labels(labels, minor=True)
-        else:
-            # labels at bin edges:
-            set_labels(labels, minor=False)
-            set_labels(["" for _ in range(size)], minor=True)
-
     ax.set_title(title)
-    ax.set_aspect(1, adjustable='box')
-    set_ticks('x', xlabels, counts.shape[0])
-    set_ticks('y', ylabels, counts.shape[1])
     ax.grid(grid)
+    return fig, ax
 
+
+def histogram(ax, counts, xlabels, ylabels, rwidth=0.85, **kwargs):
+    num = counts.size
+    if xlabels:
+        set_ticks(ax, 'x', xlabels, num)
+        orientation = 'vertical'
+        counts = counts[:, 0]
+    else:
+        set_ticks(ax, 'y', ylabels, num)
+        orientation = 'horizontal'
+        counts = counts[0, :]
+    return ax.hist(
+        range(num), range(num+1), weights=counts,
+        orientation=orientation, rwidth=rwidth, **kwargs)
+
+
+def punchcard(ax, counts, xlabels, ylabels):
+    ax.set_aspect(1, adjustable='box')
+    set_ticks(ax, 'x', xlabels, counts.shape[0])
+    set_ticks(ax, 'y', ylabels, counts.shape[1])
     max_radius = 0.9
     for (x, y), value in np.ndenumerate(counts / counts.max() * max_radius):
         if value > 0:
@@ -133,6 +209,8 @@ def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False,
                 value ** 0.50 / 2,
                 value ** 0.25)
 
+
+def savefig(fig, output=None):
     if output:
         fig.savefig(output, bbox_inches='tight')
     else:
