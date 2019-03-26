@@ -42,13 +42,13 @@ def argument_parser():
     parser = ArgumentParser()
     parser.format_help = lambda: __doc__
     add_argument = parser.add_argument
-    add_argument('-C', '--git-dir',  type=str, help='Path to git repository')
-    add_argument('-o', '--output',   type=str, help='Output image file name')
-    add_argument('-t', '--timezone', type=str, help='Set timezone')
-    add_argument('-p', '--period',   type=str, help='Set graphed period')
-    add_argument('-w', '--width',    type=int, help='Plot width in inches')
-    add_argument('--title', help="Set graph title")
-    add_argument('-g', '--grid', action='store_true', help="Enable grid")
+    add_argument('-C', '--git-dir',  type=str)
+    add_argument('-o', '--output',   type=str)
+    add_argument('-t', '--timezone', type=str)
+    add_argument('-p', '--period',   type=str)
+    add_argument('-w', '--width',    type=int)
+    add_argument('--title',          type=str)
+    add_argument('-g', '--grid', action='store_true')
     add_argument('--version', action='version', version=__version__)
     return parser
 
