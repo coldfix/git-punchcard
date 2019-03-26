@@ -3,12 +3,10 @@
 Generate a github-like punchcard for git commit activity.
 
 Usage:
-    git-punchcard [-o FILE] [-C DIR]... [-t TZ] [-p PERIOD]
-                  [--grid] [-w WIDTH] [--title TITLE]
-                  [<log options>] [<revision range>] [-- <pathes>]
+    git-punchcard [<input path>...] [<options>]
+                  [--] [<log options>] [<revision range>] [-- <path>...]
 
 Options:
-    -C DIR, --git-dir DIR           Set path for git repository
     -o FILE, --output FILE          Set output file
     -t TZ, --timezone TZ            Set timezone
     -p PERIOD, --period PERIOD      Graphed time period, e.g.: "wday/hour"
@@ -18,6 +16,11 @@ Options:
 
     -h                              Show this help
     -v, --version                   Show version and exit
+
+Input pathes can be
+
+- files with output from `git log --pretty=format:%ai` (or '-' for stdin)
+- folders corresponding to git repositories
 
 All further options are passed directly to `git log` and can be used to
 restrict the range of commits taken into account. For more info, see `git
@@ -45,7 +48,6 @@ def argument_parser():
     parser = ArgumentParser()
     parser.format_help = lambda: __doc__.lstrip()
     add_argument = parser.add_argument
-    add_argument('-C', '--git-dir',  action='append')
     add_argument('-o', '--output',   type=str)
     add_argument('-t', '--timezone', type=str)
     add_argument('-p', '--period',   type=str)
@@ -58,14 +60,27 @@ def argument_parser():
 
 def main(args=None):
     parser = argument_parser()
-    options, git_opts = parser.parse_known_args(args)
-    git_dirs = options.git_dir
+    options, remaining = parser.parse_known_args(args)
     output   = options.output
     tz_name  = options.timezone
     period   = options.period
     grid     = options.grid
     title    = options.title
     width    = options.width or 10
+
+    # Detect passed input files/folders versus git options, note that if you
+    # have weirdly named files in your local directory, you must pass '--' to
+    # ensure that git_opts are recognized properly:
+    git_dirs = []
+    git_opts = []
+    for i, arg in enumerate(remaining):
+        if arg == '--':
+            git_opts.extend(remaining[i+1:])
+            break
+        elif arg == '-' or os.path.exists(arg):
+            git_dirs.append(arg)
+        else:
+            git_opts.append(arg)
 
     dates = []
     for folder in git_dirs:
