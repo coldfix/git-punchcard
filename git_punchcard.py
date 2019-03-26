@@ -85,23 +85,53 @@ def main(args=None):
 
 def dates_to_timezone(dates, tz_name):
     """Transform a list of datetime objects to specified timezone."""
-    tz = parse_timezone(tz_name)
-    return [date.astimezone(tz) for date in dates]
+    tz, delta = parse_timezone(tz_name)
+    sec = int(delta.total_seconds())
+    deltastr = '{:+03}:{:02}'.format(sec // 3600, sec // 60 % 60) if sec else ''
+    print("Timezone: {}{}".format(tz, deltastr))
+    return [date.astimezone(tz) + delta for date in dates]
 
 
 def parse_timezone(tz_name):
-    """Instanciate a ``pytz.timezone`` with the given name or from float
-    offset in hours."""
-    from pytz import timezone, UnknownTimeZoneError
-    try:
-        return timezone(timedelta(hours=float(tz_name)))
-    except ValueError:
-        pass
-    try:
-        return timezone(tz_name)
-    except UnknownTimeZoneError:
+    """Parse and return a tuple ``(timezone, timedelta)``."""
+    from pytz import timezone
+    delta = timedelta(0)
+    for sign in '+-':
+        if sign in tz_name:
+            tz_name, offset = tz_name.split(sign)
+            parts = [int(x) for x in (sign + offset).split(':')]
+            delta = timedelta(**dict(zip(['hours', 'minutes'], parts)))
+            break
+    tz_name = tz_name or 'UTC'
+    matches = find_timezone_name(tz_name)
+    if not matches:
         raise SystemExit(
             'Unknown timezone: {!r}.'.format(tz_name))
+    return timezone(matches[0]), delta
+
+
+def find_timezone_name(tz_name):
+    """
+    Return list of matching timezones by name, country code, or country name.
+    Search is case insensitive.
+    """
+    from pytz import all_timezones_set, country_timezones, country_names
+    if tz_name in all_timezones_set:
+        return [tz_name]
+    # Case insensitive matching:
+    tz_name = tz_name.upper()
+    timzones = {tz.upper(): tz for tz in all_timezones_set}
+    if tz_name in timzones:
+        return [timzones[tz_name]]
+    # Select by country code:
+    if tz_name in country_timezones:
+        return country_timezones[tz_name]
+    # Select by country name:
+    country_codes = {
+        name.upper(): code for code, name in country_names.items()}
+    if tz_name in country_codes:
+        return country_timezones[country_codes[tz_name]]
+    return []
 
 
 def plot_date_counts(dates, period='wday/hour', *,

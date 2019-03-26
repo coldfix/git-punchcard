@@ -62,8 +62,10 @@ The most common builtin options are:
 
 .. code-block:: bash
 
-    # use a fixed timezone for all commits (case-sensitive):
+    # use a fixed timezone for all commits:
     git punchcard --timezone CET
+    git punchcard --timezone Europe/Berlin
+    git punchcard --timezone UTC+02:30
 
     # show punchcard with specified y/x axes:
     git punchcard -p year/month
@@ -78,7 +80,12 @@ The most common builtin options are:
     # show a github-like punchcard plot with grid:
     git punchcard --grid
 
-By default, each commit's local timezone is used for the plot.
+By default, each commit's local timezone is used for the plot. If setting a
+fixed timezone, it should be specified in terms of the timezone name (e.g.
+``CET`` or ``Europe/Berlin``), but can also given by `ISO 3166 country code`
+or country name (if the timezone is ambiguous we will pick the first entry).
+
+.. _ISO 3166 country code: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
 
 git log options
