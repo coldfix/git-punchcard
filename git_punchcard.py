@@ -83,7 +83,7 @@ def main(args=None):
             git_opts.append(arg)
 
     dates = []
-    for folder in git_dirs:
+    for folder in git_dirs or ['.']:
         try:
             dates.extend(get_commit_times(folder, git_opts))
         except subprocess.CalledProcessError:
