@@ -1,12 +1,22 @@
 Changes
 =======
 
+1.4.0
+~~~~~
+Date: 26.03.2019
+
+- learn ``--period Y/X`` parameter to specify Y/X axes
+- can plot histograms by leaving one of the axes empty
+- understand ``-v`` as alias for ``--version``
+
+
 1.3.0
 ~~~~~
 Date: 21.03.2019
 
 - log options are now passed directly without ``--`` same as the other options
 - drop dependency on docopt
+
 
 1.2.0
 ~~~~~
