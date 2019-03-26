@@ -33,6 +33,8 @@ __uri__     = 'https://github.com/coldfix/git-punchcard'
 import numpy as np
 import matplotlib.pyplot as plt
 
+import os
+import sys
 import shlex
 import subprocess
 from datetime import datetime, timedelta
@@ -172,10 +174,18 @@ def check_period(period, allowed):
 
 def get_commit_times(folder, git_opts):
     folder = folder or '.'
-    argv = ['git', '-C', folder, 'log', '--pretty=format:%ai'] + git_opts
-    cmdl = ' '.join(map(shlex.quote, argv))
-    print("Running: {!r}".format(cmdl))
-    stdout = subprocess.check_output(argv).decode('utf-8')
+    if folder == '-':
+        print("Reading dates from STDIN".format(folder))
+        stdout = sys.stdin.read()
+    elif os.path.isfile(folder):
+        print("Reading dates from {!r}".format(folder))
+        with open(folder) as f:
+            stdout = f.read()
+    else:
+        argv = ['git', '-C', folder, 'log', '--pretty=format:%ai'] + git_opts
+        cmdl = ' '.join(map(shlex.quote, argv))
+        print("Running: {!r}".format(cmdl))
+        stdout = subprocess.check_output(argv).decode('utf-8')
     return [
         datetime.strptime(line, '%Y-%m-%d %H:%M:%S %z')
         for line in stdout.splitlines()
