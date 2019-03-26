@@ -86,22 +86,47 @@ def main(args=None):
 def dates_to_timezone(dates, tz_name):
     """Transform a list of datetime objects to specified timezone."""
     tz = parse_timezone(tz_name)
+    print("Timezone: {}".format(tz))
     return [date.astimezone(tz) for date in dates]
 
 
 def parse_timezone(tz_name):
     """Instanciate a ``pytz.timezone`` with the given name or from float
     offset in hours."""
-    from pytz import timezone, UnknownTimeZoneError
+    from pytz import timezone
     try:
         return timezone(timedelta(hours=float(tz_name)))
     except ValueError:
         pass
-    try:
-        return timezone(tz_name)
-    except UnknownTimeZoneError:
+    matches = find_timezone_name(tz_name)
+    if not matches:
         raise SystemExit(
             'Unknown timezone: {!r}.'.format(tz_name))
+    return timezone(matches[0])
+
+
+def find_timezone_name(tz_name):
+    """
+    Return list of matching timezones by name, country code, or country name.
+    Search is case insensitive.
+    """
+    from pytz import all_timezones_set, country_timezones, country_names
+    if tz_name in all_timezones_set:
+        return [tz_name]
+    # Case insensitive matching:
+    tz_name = tz_name.upper()
+    timzones = {tz.upper(): tz for tz in all_timezones_set}
+    if tz_name in timzones:
+        return [timzones[tz_name]]
+    # Select by country code:
+    if tz_name in country_timezones:
+        return country_timezones[tz_name]
+    # Select by country name:
+    country_codes = {
+        name.upper(): code for code, name in country_names.items()}
+    if tz_name in country_codes:
+        return country_timezones[country_codes[tz_name]]
+    return []
 
 
 def plot_date_counts(dates, period='wday/hour', *,
