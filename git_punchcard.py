@@ -33,6 +33,7 @@ __uri__     = 'https://github.com/coldfix/git-punchcard'
 import numpy as np
 import matplotlib.pyplot as plt
 
+import shlex
 import subprocess
 from datetime import datetime, timedelta
 from argparse import ArgumentParser
@@ -65,6 +66,8 @@ def main(args=None):
     width    = options.width or 10
 
     dates = get_commit_times(folder, git_opts)
+    if not dates:
+        raise SystemExit("No commits match the specified restrictions.")
 
     if tz_name:
         dates = dates_to_timezone(dates, tz_name)
@@ -78,12 +81,23 @@ def main(args=None):
 
 def dates_to_timezone(dates, tz_name):
     """Transform a list of datetime objects to specified timezone."""
-    from pytz import timezone
-    try:
-        tz = timezone(timedelta(hours=float(tz_name)))
-    except ValueError:
-        tz = timezone(tz_name)
+    tz = parse_timezone(tz_name)
     return [date.astimezone(tz) for date in dates]
+
+
+def parse_timezone(tz_name):
+    """Instanciate a ``pytz.timezone`` with the given name or from float
+    offset in hours."""
+    from pytz import timezone, UnknownTimeZoneError
+    try:
+        return timezone(timedelta(hours=float(tz_name)))
+    except ValueError:
+        pass
+    try:
+        return timezone(tz_name)
+    except UnknownTimeZoneError:
+        raise SystemExit(
+            'Unknown timezone: {!r}.'.format(tz_name))
 
 
 def plot_date_counts(dates, period='wday/hour', *,
@@ -117,14 +131,19 @@ def plot_date_counts(dates, period='wday/hour', *,
 
 def check_period(period, allowed):
     if period not in allowed:
-        raise ValueError("Unknown period: {!r}, must be one of: [{}]"
-                         .format(period, ', '.join(allowed)))
+        raise SystemExit(
+            "Unknown period: {!r}, must be one of: [{}]"
+            .format(period, ', '.join(allowed)))
 
 
 def get_commit_times(folder, git_opts):
     folder = folder or '.'
     argv = ['git', '-C', folder, 'log', '--pretty=format:%ai'] + git_opts
-    stdout = subprocess.check_output(argv).decode('utf-8')
+    cmdl = ' '.join(map(shlex.quote, argv))
+    try:
+        stdout = subprocess.check_output(argv).decode('utf-8')
+    except subprocess.CalledProcessError:
+        raise SystemExit("Error during: {!r}".format(cmdl))
     return [
         datetime.strptime(line, '%Y-%m-%d %H:%M:%S %z')
         for line in stdout.splitlines()
