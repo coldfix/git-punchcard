@@ -67,14 +67,31 @@ def main(args=None):
     dates = get_commit_times(folder, git_opts)
 
     if tz_name:
-        from pytz import timezone
-        try:
-            tz = timezone(timedelta(hours=float(tz_name)))
-        except ValueError:
-            tz = timezone(tz_name)
-        dates = [date.astimezone(tz) for date in dates]
+        dates = dates_to_timezone(dates, tz_name)
 
     period = period or 'wday/hour'
+    fig = plot_date_counts(
+        dates, period, width=width, grid=grid, title=title)
+
+    savefig(fig, output)
+
+
+def dates_to_timezone(dates, tz_name):
+    """Transform a list of datetime objects to specified timezone."""
+    from pytz import timezone
+    try:
+        tz = timezone(timedelta(hours=float(tz_name)))
+    except ValueError:
+        tz = timezone(tz_name)
+    return [date.astimezone(tz) for date in dates]
+
+
+def plot_date_counts(dates, period='wday/hour', *,
+                     width=10, grid=False, title=None):
+    """
+    Create and return a histogram/punchcard figure with ``dates`` counted as
+    specified by ``period``.
+    """
     if '/' in period:
         yname, xname = period.split('/')
         check_period(xname or yname, Classifiers.KNOWN)
@@ -95,8 +112,7 @@ def main(args=None):
         punchcard(ax, counts[:, ::-1], xlabel, ylabel[::-1])
     else:
         histogram(ax, counts[:, ::-1], xlabel, ylabel[::-1])
-
-    savefig(fig, output)
+    return fig
 
 
 def check_period(period, allowed):
