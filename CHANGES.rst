@@ -1,6 +1,21 @@
 Changes
 =======
 
+2.0.0
+~~~~~
+Date: 26.03.2019
+
+- turn ``-C`` into positional argument, remove ``-C`` option
+- allow multiple input files
+- allow passing ``-`` and files with ``git log`` output as input files
+- remove obsolete dependency on docopt
+- allow passing country codes and names instead of timezone (using first
+  available timezone in case of ambiguity)
+- match timezones case-insensitively
+- show git command and number of commits
+- show error message without traceback for common errors
+
+
 1.4.0
 ~~~~~
 Date: 26.03.2019
