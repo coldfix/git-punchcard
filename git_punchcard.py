@@ -77,22 +77,27 @@ def main(args=None):
     period = period or 'wday/hour'
     if '/' in period:
         yname, xname = period.split('/')
-        check_period(xname, Classifiers.KNOWN)
-        check_period(yname, Classifiers.KNOWN)
+        check_period(xname or yname, Classifiers.KNOWN)
+        check_period(yname or xname, Classifiers.KNOWN)
     else:
         check_period(period, Classifiers.SHORT)
         xname, yname = Classifiers.SHORT[period]
 
-    xdata, xlabel, xmin, xmax = getattr(Classifiers, xname)(dates)
-    ydata, ylabel, ymin, ymax = getattr(Classifiers, yname)(dates)
+    xdata, xlabel, xmin, xmax = getattr(Classifiers, xname or 'none')(dates)
+    ydata, ylabel, ymin, ymax = getattr(Classifiers, yname or 'none')(dates)
 
     counts = np.zeros((xmax-xmin+1, ymax-ymin+1))
     for x, y in zip(xdata, ydata):
         counts[x - xmin][y - ymin] += 1
 
-    punchcard(
-        counts[:, ::-1], xlabel, ylabel[::-1],
-        output=output, width=width, grid=grid, title=title)
+    fig, ax = makefig(width=width, grid=grid, title=title)
+    if xname and yname:
+        punchcard(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+    else:
+        histogram(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+
+    savefig(fig, output)
+
 
 def check_period(period, allowed):
     if period not in allowed:
@@ -142,39 +147,60 @@ class Classifiers:
         labels = ['{}'.format(x) for x in range(25)]
         return (values, labels, 0, 23)
 
+    def none(dates):
+        values = [0 for d in dates]
+        labels = []
+        return (values, labels, 0, 0)
 
-def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False,
-              title=None):
 
+def set_ticks(ax, axis, labels, size, **kwargs):
+    set_lim    = getattr(ax, 'set_{}lim'.format(axis))
+    set_ticks  = getattr(ax, 'set_{}ticks'.format(axis))
+    set_labels = getattr(ax, 'set_{}ticklabels'.format(axis))
+
+    set_lim(0, size)
+    set_ticks(np.arange(size + 1), minor=False)
+    set_ticks(np.arange(size) + 0.5, minor=True)
+    ax.tick_params(axis=axis, which='minor', length=0)
+
+    if len(labels) == size:
+        # labels centered in bin
+        set_labels(["" for _ in range(size+1)], minor=False)
+        set_labels(labels, minor=True, **kwargs)
+    else:
+        # labels at bin edges:
+        set_labels(labels, minor=False, **kwargs)
+        set_labels(["" for _ in range(size)], minor=True)
+
+
+def makefig(width=10, grid=False, title=None):
     fig, ax = plt.subplots()
     fig.tight_layout()
     fig.set_figwidth(width)
-
-    def set_ticks(axis, labels, size):
-        set_lim    = getattr(ax, 'set_{}lim'.format(axis))
-        set_ticks  = getattr(ax, 'set_{}ticks'.format(axis))
-        set_labels = getattr(ax, 'set_{}ticklabels'.format(axis))
-
-        set_lim(0, size)
-        set_ticks(np.arange(size + 1), minor=False)
-        set_ticks(np.arange(size) + 0.5, minor=True)
-        ax.tick_params(axis=axis, which='minor', length=0)
-
-        if len(labels) == size:
-            # labels centered in bin
-            set_labels(["" for _ in range(size+1)], minor=False)
-            set_labels(labels, minor=True)
-        else:
-            # labels at bin edges:
-            set_labels(labels, minor=False)
-            set_labels(["" for _ in range(size)], minor=True)
-
     ax.set_title(title)
-    ax.set_aspect(1, adjustable='box')
-    set_ticks('x', xlabels, counts.shape[0])
-    set_ticks('y', ylabels, counts.shape[1])
     ax.grid(grid)
+    return fig, ax
 
+
+def histogram(ax, counts, xlabels, ylabels, rwidth=0.85, **kwargs):
+    num = counts.size
+    if xlabels:
+        set_ticks(ax, 'x', xlabels, num)
+        orientation = 'vertical'
+        counts = counts[:, 0]
+    else:
+        set_ticks(ax, 'y', ylabels, num)
+        orientation = 'horizontal'
+        counts = counts[0, :]
+    return ax.hist(
+        range(num), range(num+1), weights=counts,
+        orientation=orientation, rwidth=rwidth, **kwargs)
+
+
+def punchcard(ax, counts, xlabels, ylabels):
+    ax.set_aspect(1, adjustable='box')
+    set_ticks(ax, 'x', xlabels, counts.shape[0])
+    set_ticks(ax, 'y', ylabels, counts.shape[1])
     max_radius = 0.9
     for (x, y), value in np.ndenumerate(counts / counts.max() * max_radius):
         if value > 0:
@@ -183,6 +209,8 @@ def punchcard(counts, xlabels, ylabels, output=None, width=10, grid=False,
                 value ** 0.50 / 2,
                 value ** 0.25)
 
+
+def savefig(fig, output=None):
     if output:
         fig.savefig(output, bbox_inches='tight')
     else:

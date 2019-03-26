@@ -76,8 +76,12 @@ Specify different y/x axes:
 
 .. code-block:: bash
 
+    # punchcard: y/x
     git punchcard -p year/month
     git punchcard -p wday/month
+
+    # histogram for weekday:
+    git punchcard -p /wday
 
 Set the directory of the git repository as follows:
 
