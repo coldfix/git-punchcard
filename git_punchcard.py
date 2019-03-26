@@ -85,24 +85,29 @@ def main(args=None):
 
 def dates_to_timezone(dates, tz_name):
     """Transform a list of datetime objects to specified timezone."""
-    tz = parse_timezone(tz_name)
-    print("Timezone: {}".format(tz))
-    return [date.astimezone(tz) for date in dates]
+    tz, delta = parse_timezone(tz_name)
+    sec = int(delta.total_seconds())
+    deltastr = '{:+03}:{:02}'.format(sec // 3600, sec // 60 % 60) if sec else ''
+    print("Timezone: {}{}".format(tz, deltastr))
+    return [date.astimezone(tz) + delta for date in dates]
 
 
 def parse_timezone(tz_name):
-    """Instanciate a ``pytz.timezone`` with the given name or from float
-    offset in hours."""
+    """Parse and return a tuple ``(timezone, timedelta)``."""
     from pytz import timezone
-    try:
-        return timezone(timedelta(hours=float(tz_name)))
-    except ValueError:
-        pass
+    delta = timedelta(0)
+    for sign in '+-':
+        if sign in tz_name:
+            tz_name, offset = tz_name.split(sign)
+            parts = [int(x) for x in (sign + offset).split(':')]
+            delta = timedelta(**dict(zip(['hours', 'minutes'], parts)))
+            break
+    tz_name = tz_name or 'UTC'
     matches = find_timezone_name(tz_name)
     if not matches:
         raise SystemExit(
             'Unknown timezone: {!r}.'.format(tz_name))
-    return timezone(matches[0])
+    return timezone(matches[0]), delta
 
 
 def find_timezone_name(tz_name):

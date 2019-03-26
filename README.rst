@@ -65,6 +65,7 @@ The most common builtin options are:
     # use a fixed timezone for all commits:
     git punchcard --timezone CET
     git punchcard --timezone Europe/Berlin
+    git punchcard --timezone UTC+02:30
 
     # show punchcard with specified y/x axes:
     git punchcard -p year/month
