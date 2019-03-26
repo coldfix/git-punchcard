@@ -40,7 +40,7 @@ from argparse import ArgumentParser
 
 def argument_parser():
     parser = ArgumentParser()
-    parser.format_help = lambda: __doc__
+    parser.format_help = lambda: __doc__.lstrip()
     add_argument = parser.add_argument
     add_argument('-C', '--git-dir',  type=str)
     add_argument('-o', '--output',   type=str)
