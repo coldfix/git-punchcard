@@ -17,7 +17,7 @@ Options:
     --title TITLE                   Set graph title
 
     -h                              Show this help
-    --version                       Show version and exit
+    -v, --version                   Show version and exit
 
 All further options are passed directly to `git log` and can be used to
 restrict the range of commits taken into account. For more info, see `git
@@ -48,8 +48,8 @@ def argument_parser():
     add_argument('-p', '--period',   type=str)
     add_argument('-w', '--width',    type=int)
     add_argument('--title',          type=str)
-    add_argument('-g', '--grid', action='store_true')
-    add_argument('--version', action='version', version=__version__)
+    add_argument('-g', '--grid',     action='store_true')
+    add_argument('-v', '--version',  action='version', version=__version__)
     return parser
 
 
