@@ -10,11 +10,11 @@ install:
   - if [[ -n $TRAVIS_TAG ]]; then unset BUILD_TAG TWINE_REPOSITORY_URL ]]; fi
   - python setup.py egg_info -b "$BUILD_TAG" sdist bdist_wheel
   - pip install dist/*.whl
-  - pip install pyflakes twine
+  - pip install flake8 twine
 
 script:
   - twine check dist/*
-  - pyflakes .
+  - flake8
 
 jobs:
   include:

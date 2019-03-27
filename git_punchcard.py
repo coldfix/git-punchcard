@@ -106,7 +106,7 @@ def dates_to_timezone(dates, tz_name):
     """Transform a list of datetime objects to specified timezone."""
     tz, delta = parse_timezone(tz_name)
     sec = int(delta.total_seconds())
-    deltastr = '{:+03}:{:02}'.format(sec // 3600, sec // 60 % 60) if sec else ''
+    deltastr = '{:+03}:{:02}'.format(sec//3600, sec//60 % 60) if sec else ''
     print("Timezone: {}{}".format(tz, deltastr))
     return [date.astimezone(tz) + delta for date in dates]
 
