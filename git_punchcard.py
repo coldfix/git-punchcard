@@ -31,7 +31,7 @@ __version__ = '2.0.1'
 __author__  = 'Thomas Gläßle'
 __email__   = 'thomas@coldfix.de'
 __license__ = 'Unlicense'
-__uri__     = 'https://github.com/coldfix/git-punchcard'
+__url__     = 'https://github.com/coldfix/git-punchcard'
 
 import numpy as np
 import matplotlib.pyplot as plt
