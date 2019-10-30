@@ -1,6 +1,14 @@
 Changes
 =======
 
+2.0.2
+~~~~~
+Date: 31.10.2019
+
+- automatic deployments
+- changes in setup and testing
+
+
 2.0.1
 ~~~~~
 Date: 26.03.2019
