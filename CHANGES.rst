@@ -1,6 +1,13 @@
 Changes
 =======
 
+2.0.3
+~~~~~
+Date: 31.10.2019
+
+- include license file in source distribution
+
+
 2.0.2
 ~~~~~
 Date: 31.10.2019
