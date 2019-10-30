@@ -1,5 +1,4 @@
 language: python
-dist: xenial
 python:
   - "3.5"
   - "3.6"
@@ -19,7 +18,7 @@ jobs:
     - stage: deploy
       name: Upload release to PyPI
       if: tag is present
-      script: twine upload dist/*.tar.gz dist/*.whl
+      script: twine upload dist/*
       env:
         - TWINE_USERNAME=coldfix-deploy
         # TWINE_PASSWORD:
