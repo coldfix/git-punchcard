@@ -192,7 +192,7 @@ def check_period(period, allowed):
 def get_commit_times(folder, git_opts):
     folder = folder or '.'
     if folder == '-':
-        print("Reading dates from STDIN".format(folder))
+        print("Reading dates from STDIN")
         stdout = sys.stdin.read()
     elif os.path.isfile(folder):
         print("Reading dates from {!r}".format(folder))
