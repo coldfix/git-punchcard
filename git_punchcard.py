@@ -13,6 +13,7 @@ Options:
     -w WIDTH, --width WIDTH         Plot width in inches
     -g, --grid                      Enable grid
     --title TITLE                   Set graph title
+    -d, --density                   Enable grid
 
     -h                              Show this help
     -v, --version                   Show version and exit
@@ -54,6 +55,7 @@ def argument_parser():
     add_argument('-w', '--width',    type=int)
     add_argument('--title',          type=str)
     add_argument('-g', '--grid',     action='store_true')
+    add_argument('-d', '--density',  action='store_true')
     add_argument('-v', '--version',  action='version', version=__version__)
     return parser
 
@@ -67,6 +69,7 @@ def main(args=None):
     grid     = options.grid
     title    = options.title
     width    = options.width or 10
+    style    = 'density' if options.density else 'punch'
 
     # Detect passed input files/folders versus git options, note that if you
     # have weirdly named files in your local directory, you must pass '--' to
@@ -97,7 +100,7 @@ def main(args=None):
 
     period = period or 'wday/hour'
     fig = plot_date_counts(
-        dates, period, width=width, grid=grid, title=title)
+        dates, period, style=style, width=width, grid=grid, title=title)
 
     savefig(fig, output)
 
@@ -153,7 +156,7 @@ def find_timezone_name(tz_name):
     return []
 
 
-def plot_date_counts(dates, period='wday/hour', *,
+def plot_date_counts(dates, period='wday/hour', *, style='punch',
                      width=10, grid=False, title=None):
     """
     Create and return a histogram/punchcard figure with ``dates`` counted as
@@ -176,7 +179,12 @@ def plot_date_counts(dates, period='wday/hour', *,
 
     fig, ax = makefig(width=width, grid=grid, title=title)
     if xname and yname:
-        punchcard(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+        if style == 'punch':
+            punchcard(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+        elif style == 'density':
+            densities(ax, counts[:, ::-1], xlabel, ylabel[::-1])
+        else:
+            raise ValueError("Unknown plot: {!r}".format(style))
     else:
         histogram(ax, counts[:, ::-1], xlabel, ylabel[::-1])
     return fig
@@ -316,6 +324,15 @@ def draw_circle(ax, x, y, radius, opacity=1):
     ax.add_patch(plt.Circle(
         (x, y), radius, color=color,
         linestyle=None, linewidth=0))
+
+
+def densities(ax, counts, xlabels, ylabels):
+    ax.set_aspect(1, adjustable='box')
+    set_ticks(ax, 'x', xlabels, counts.shape[0])
+    set_ticks(ax, 'y', ylabels, counts.shape[1])
+    plt.imshow(
+        counts.T, origin='lower', cmap='Greys',
+        extent=(0, len(xlabels), 0, len(ylabels)))
 
 
 if __name__ == '__main__':
