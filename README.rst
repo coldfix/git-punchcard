@@ -16,7 +16,7 @@ Install or upgrade from PyPI_ as follows:
 
 .. code-block:: bash
 
-    pip install --user --upgrade git-punchcard
+    pip install --user --upgrade git-punchcard[gui]
 
 Also, make sure that ``$HOME/.local/bin`` is in ``$PATH``.
 
@@ -25,7 +25,7 @@ isolated environment, e.g. using pipx_:
 
 .. code-block:: bash
 
-    pipx install git-punchcard
+    pipx install git-punchcard[gui]
 
 .. _PyPI: https://pypi.org/project/git-punchcard
 .. _pipx: https://github.com/pipxproject/pipx
