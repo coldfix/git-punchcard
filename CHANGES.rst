@@ -1,6 +1,14 @@
 Changes
 =======
 
+2.0.4
+~~~~~
+Date: 28.10.2021
+
+- add pyqt as optional *gui* dependency, e.g.: ``pip install git-punchcard[gui]``
+- migrate from Travis CI to GitHub Actions
+
+
 2.0.3
 ~~~~~
 Date: 31.10.2019
